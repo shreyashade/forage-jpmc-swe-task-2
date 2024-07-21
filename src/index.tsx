@@ -11,4 +11,5 @@ declare global {
 /**
  * React App attaches the DOM to the DOM element #root in public/index.html
  */
-ReactDOM.render(<App />, document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+root.render(<App />);

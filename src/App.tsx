@@ -15,6 +15,7 @@ interface IState {
  * It renders title, button and Graph react element.
  */
 class App extends Component<{}, IState> {
+  private intervalid: NodeJS.Timeout | undefined; //Store interval ID for clearing
   constructor(props: {}) {
     super(props);
 
@@ -36,16 +37,28 @@ class App extends Component<{}, IState> {
    * Get new data from server and update the state with the new data
    */
   getDataFromServer() {
-    DataStreamer.getData((serverResponds: ServerRespond[]) => {
-      // Update the state by creating a new array of data that consists of
-      // Previous data in the state and the new data from server
-      this.setState({ data: [...this.state.data, ...serverResponds] });
-    });
+    this.intervalId = setInterval(() => {
+      DataStreamer.getData((serverResponds: ServerRespond[]) => {
+        this.setState((prevState) => ({
+          data: [...prevState.data, ...serverResponds],
+        }));
+      });
+    }, 100); // Fetch data every 100ms
   }
 
   /**
    * Render the App react component
    */
+  componentDidMount() {
+    this.getDataFromServer(); // Start data fetching when component mounts
+  }
+  
+  componentWillUnmount() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId); // Clear interval on component unmount
+    }
+  }
+  
   render() {
     return (
       <div className="App">
@@ -53,13 +66,7 @@ class App extends Component<{}, IState> {
           Bank & Merge Co Task 2
         </header>
         <div className="App-content">
-          <button className="btn btn-primary Stream-button"
-            // when button is click, our react app tries to request
-            // new data from the server.
-            // As part of your task, update the getDataFromServer() function
-            // to keep requesting the data every 100ms until the app is closed
-            // or the server does not return anymore data.
-            onClick={() => {this.getDataFromServer()}}>
+          <button className="btn btn-primary Stream-button" onClick={() => { this.getDataFromServer(); }}>
             Start Streaming Data
           </button>
           <div className="Graph">
@@ -67,8 +74,8 @@ class App extends Component<{}, IState> {
           </div>
         </div>
       </div>
-    )
+    );
   }
-}
+  
 
 export default App;

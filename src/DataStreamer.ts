@@ -1,6 +1,6 @@
 export interface Order {
-  price: Number,
-  size: Number,
+  price: number,
+  size: number,
 }
 /**
  * The datafeed server returns an array of ServerRespond with 2 stocks.
@@ -21,19 +21,21 @@ class DataStreamer {
    * Send request to the datafeed server and executes callback function on success
    * @param callback callback function that takes JSON object as its argument
    */
-  static getData(callback: (data: ServerRespond[]) => void): void {
-    const request = new XMLHttpRequest();
-    request.open('GET', DataStreamer.API_URL, false);
+  static async getData(callback: (data: ServerRespond[]) => void): Promise<void> {
+    try {
+      const response = await fetch(DataStreamer.API_URL);
 
-    request.onload = () => {
-      if (request.status === 200) {
-        callback(JSON.parse(request.responseText));
+      if (response.ok) {
+        const data: ServerRespond[] = await.response.json();
+        callback(data);
       } else {
-        alert ('Request failed');
+        console.error('Request failed with status:', response.status);
+        alert('Request failed');
       }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      alert('An error occured while fetching data');
     }
-
-    request.send();
   }
 }
 
